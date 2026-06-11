@@ -13,6 +13,7 @@ import threading
 import webbrowser
 from contextlib import redirect_stdout
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from importlib import resources
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -39,6 +40,12 @@ def _dashboard_html_path() -> Optional[Path]:
     for path in candidates:
         if path.is_file():
             return path
+    try:
+        packaged = resources.files("virtuoso_web").joinpath("dashboard.html")
+        if packaged.is_file():
+            return packaged
+    except (FileNotFoundError, ModuleNotFoundError):
+        pass
     return None
 
 
@@ -54,6 +61,14 @@ def _logo_path() -> Optional[Path]:
             candidate = base / "assets" / "icons" / name
             if candidate.is_file():
                 return candidate
+    try:
+        package_files = resources.files("assets.icons")
+        for name in names:
+            candidate = package_files.joinpath(name)
+            if candidate.is_file():
+                return candidate
+    except (FileNotFoundError, ModuleNotFoundError):
+        pass
     return None
 
 

@@ -6,6 +6,15 @@ Google Gemini expert fallback integration (optional).
 import os
 from typing import Optional, List, Tuple
 
+from core.gemini_models import DEFAULT_GEMINI_FLASH
+
+try:
+    from google import genai
+    from google.genai import types as genai_types
+except Exception:
+    genai = None
+    genai_types = None
+
 
 class GeminiExpert:
     def __init__(self, api_key: Optional[str] = None, max_failures_before_fallback: int = 2):
@@ -19,15 +28,14 @@ class GeminiExpert:
             # Not enabled if no key
             return
 
+        if genai is None or genai_types is None:
+            return
+
         try:
-            import google.generativeai as genai
-            self.genai = genai
-            genai.configure(api_key=self.api_key)
-            # model name used for generation
-            self.model_name = "gemini-1.5-flash"
+            self.genai = genai.Client(api_key=self.api_key)
+            self.model_name = DEFAULT_GEMINI_FLASH
             self.enabled = True
         except Exception:
-            # If the SDK is not installed or config fails, disable expert mode
             self.enabled = False
 
     def is_available(self) -> bool:
@@ -46,8 +54,14 @@ class GeminiExpert:
         prompt = f"Task: {task}\nContext: {context}\nLocal attempts:\n{attempts_text}\n\nAnalyze the attempts and provide corrected code. Output ONLY the corrected code in a markdown code block."
 
         try:
-            # Use the SDK to generate content. The exact call may vary by SDK version.
-            resp = self.genai.generate(model=self.model_name, prompt=prompt, max_output_tokens=1024)
+            resp = self.genai.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=genai_types.GenerateContentConfig(
+                    max_output_tokens=1024,
+                    temperature=0.2,
+                ),
+            )
             # Attempt to extract text
             text = ''
             if hasattr(resp, 'text'):

@@ -1,0 +1,13 @@
+models:
+  - name: Virtuoso
+    provider: openai
+    model: virtuoso
+    apiBase: http://127.0.0.1:8765/v1
+    apiKey: dummy
+
+tabAutocompleteModel:
+  name: Virtuoso
+  provider: openai
+  model: virtuoso
+  apiBase: http://127.0.0.1:8765/v1
+  apiKey: dummy

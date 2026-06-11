@@ -7,7 +7,12 @@ Commands: /generate, /plan, /search, /read, /glob, /status, /config, /exit
 import sys
 import os
 import argparse
+import socket
+import shutil
+import warnings
 from pathlib import Path
+
+warnings.filterwarnings("ignore", message=".*doesn't match a supported version.*")
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -46,6 +51,7 @@ from core.gemini_setup import (
 )
 from core.openai_setup import PROVIDER_PRESETS, apply_provider_preset, has_openai_api_key
 from core.output_paths import write_code_output
+from core.version import __version__
 
 config = None
 logger = None
@@ -788,6 +794,79 @@ def cmd_config():
             print(f"  {values}")
 
 
+def _port_available(host: str, port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.settimeout(0.5)
+        return sock.connect_ex((host, port)) != 0
+
+
+def cmd_doctor() -> int:
+    """Run local readiness checks without calling model providers."""
+    from core.paths import config_path
+    from core.web_dashboard import _dashboard_html_path, _logo_path
+
+    checks = []
+
+    def add(name: str, ok: bool, detail: str = "", required: bool = False):
+        checks.append((name, ok, detail, required))
+
+    add("Python version", sys.version_info >= (3, 10), sys.version.split()[0], required=True)
+
+    try:
+        cfg = load_config()
+        cfg_path = config_path()
+        add("Config file", cfg_path.exists(), str(cfg_path), required=True)
+    except Exception as exc:
+        cfg = {}
+        add("Config file", False, str(exc), required=True)
+
+    llm_cfg = cfg.get("llm", {}) if isinstance(cfg, dict) else {}
+    backend = llm_cfg.get("backend", "gemini-apikey")
+    gemini_key = bool((llm_cfg.get("gemini", {}).get("api_key") or os.environ.get("GEMINI_API_KEY") or "").strip())
+    openai_key = False
+    try:
+        from core.openai_compat_client import resolve_openai_api_key
+
+        openai_key = resolve_openai_api_key(llm_cfg.get("openai", {})) is not None
+    except Exception:
+        openai_key = False
+
+    if backend.startswith("gemini"):
+        add("Gemini key", gemini_key, "present" if gemini_key else "missing; run /gemini setup")
+    elif backend == "openai":
+        add("OpenAI-compatible key", openai_key, "present" if openai_key else "missing; run /openai setup")
+    else:
+        add("Cloud API key", True, "not required for current backend")
+
+    add("Dashboard HTML", _dashboard_html_path() is not None, str(_dashboard_html_path() or "missing"), required=True)
+    add("Icon asset", _logo_path() is not None, str(_logo_path() or "missing"))
+    add("ripgrep", has_ripgrep(), shutil.which("rg") or "optional fallback will be used")
+    add("Dashboard port", _port_available("127.0.0.1", int(cfg.get("cli", {}).get("dashboard_port", 8788))), "127.0.0.1:8788")
+    add("IDE server port", _port_available("127.0.0.1", int(cfg.get("cli", {}).get("ide_server_port", 8765))), "127.0.0.1:8765")
+
+    shim_cfg = llm_cfg.get("shimmy", {})
+    shimmy_binary = shim_cfg.get("binary_path") or shutil.which("shimmy")
+    add("Shimmy binary", bool(shimmy_binary), shimmy_binary or "optional; needed only for /profile local")
+
+    print(f"Virtuoso doctor v{__version__}")
+    failed_required = 0
+    for name, ok, detail, required in checks:
+        marker = "OK" if ok else "WARN"
+        if required and not ok:
+            failed_required += 1
+        print(f"[{marker}] {name}: {detail}")
+
+    if failed_required:
+        print(f"\nDoctor found {failed_required} required issue(s).")
+        return 1
+    warnings = sum(1 for _, ok, _, _ in checks if not ok)
+    if warnings:
+        print(f"\nDoctor finished with {warnings} warning(s). Cloud API keys and Shimmy are optional depending on your workflow.")
+        return 0
+    print("\nDoctor finished cleanly.")
+    return 0
+
+
 def run_tui():
     if not init():
         raise RuntimeError("Backend not connected")
@@ -898,6 +977,8 @@ def main():
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Virtuoso CLI Agent")
+    parser.add_argument("--version", action="store_true", help="Print version and exit")
+    parser.add_argument("--doctor", action="store_true", help="Check local setup without calling model providers")
     parser.add_argument("--tui", action="store_true", help="Launch the Textual dashboard")
     parser.add_argument("--serve", action="store_true", help="OpenAI-compatible IDE API server")
     parser.add_argument("--serve-host", default="127.0.0.1", help="IDE server bind host")
@@ -908,9 +989,13 @@ def parse_args():
     return parser.parse_args()
 
 
-if __name__ == "__main__":
+def cli_main():
     args = parse_args()
-    if args.serve:
+    if args.version:
+        print(f"virtuoso {__version__}")
+    elif args.doctor:
+        raise SystemExit(cmd_doctor())
+    elif args.serve:
         cmd_serve(host=args.serve_host, port=args.serve_port)
     elif args.dashboard:
         cmd_dashboard(host=args.dashboard_host, port=args.dashboard_port)
@@ -918,3 +1003,7 @@ if __name__ == "__main__":
         run_tui()
     else:
         main()
+
+
+if __name__ == "__main__":
+    cli_main()

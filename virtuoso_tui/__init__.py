@@ -257,7 +257,7 @@ class VirtuosoTUI(App):
         self.query_one("#tool-log", RichLog).write(f"[yellow]Running: {command}")
         self.perform_command(command)
 
-    @work
+    @work(thread=True)
     def perform_command(self, command: str) -> None:
         with redirect_stdout(self.output_stream):
             if command.startswith("/build "):

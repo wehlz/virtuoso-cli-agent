@@ -1,6 +1,21 @@
 # Virtuoso CLI Agent
 
-Lightweight coding agent for **8GB laptops**: chat in the terminal, plan/build code, and plug into **VS Code / Cursor** via an OpenAI-compatible API.
+Lightweight AI coding agent for **8GB laptops**: chat, plan, build files, use a browser dashboard, and plug into **VS Code / Cursor** through an OpenAI-compatible local API.
+
+![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![Tests](https://img.shields.io/badge/tests-pytest-brightgreen)
+![Status](https://img.shields.io/badge/status-public--ready-orange)
+
+<p align="center">
+  <img src="docs/assets/dashboard-demo.gif" alt="Virtuoso browser dashboard demo" width="900">
+</p>
+
+## Why Virtuoso?
+
+Most coding agents assume a powerful workstation, a paid model account, or a heavy local setup. Virtuoso is built for ordinary laptops: Gemini-first cloud mode, optional local Shimmy models, a browser dashboard for non-terminal workflows, and editor integration when you want it.
+
+Use it when you want a small, hackable coding agent that can run on modest hardware without giving up the useful pieces: chat memory, planning, build/save flows, presets, and IDE-compatible API serving.
 
 ## Features
 
@@ -13,12 +28,39 @@ Lightweight coding agent for **8GB laptops**: chat in the terminal, plan/build c
 - **Presets** — `/fix`, `/explain`, `/test`, `/refactor`, `/review`
 - **Standalone exe** — `dist/virtuoso.exe` (Windows)
 
+## 60-second demo
+
+```bash
+# After cloning this repository:
+cd virtuoso-cli-agent
+python scripts/setup_dev.py
+python virtuoso.py --dashboard
+```
+
+Open the dashboard, paste a Gemini API key, choose **Build**, and try:
+
+```text
+make a Python todo app on my desktop titled todo
+```
+
 ## Quick start
 
 ```bash
 pip install -r requirements.txt
 cp virtuoso.yaml.example virtuoso.yaml   # Windows: copy virtuoso.yaml.example virtuoso.yaml
 python virtuoso.py
+```
+
+One-command local setup after cloning:
+
+```bash
+python scripts/setup_dev.py
+```
+
+Windows shortcut:
+
+```bat
+setup.bat
 ```
 
 ### Browser dashboard (recommended UI)
@@ -45,6 +87,13 @@ First launch runs a short wizard. Then:
 /gemini setup          # paste API key from https://aistudio.google.com/apikey
 hello                  # chat directly at >
 /status
+```
+
+Check your local setup at any time:
+
+```bash
+python virtuoso.py --doctor
+python virtuoso.py --version
 ```
 
 ### Profiles
@@ -86,6 +135,17 @@ python virtuoso.py --serve
 ```
 
 Point Continue at `http://127.0.0.1:8765/v1` — see [docs/continue_integration.md](docs/continue_integration.md).
+
+Copy-paste examples are available in [examples/](examples/), including prompts and Continue/OpenRouter config snippets.
+
+## How it compares
+
+| Tool | Best for | Virtuoso difference |
+|------|----------|--------------------|
+| Cursor / Cline | IDE-native coding workflows | Virtuoso is CLI/dashboard first and exposes a local OpenAI-compatible API for editor use. |
+| Open Interpreter | General computer-control tasks | Virtuoso focuses on coding agent flows: plan, build, review, save, and IDE serving. |
+| Ollama-based tools | Local-model workflows | Virtuoso defaults to Gemini for 8GB laptops and keeps local Shimmy optional. |
+| Cloud coding agents | Hosted development | Virtuoso is local-first, hackable, and keeps config/state on your machine. |
 
 ## Commands
 
@@ -155,11 +215,27 @@ Load `vscode-extension/` as an unpacked extension for commands to open the CLI a
 
 Benchmark scripts under `scripts/` need **Docker**, **16+ GB RAM**, and large disk. They are not required for normal use. On an 8GB machine the runner exits with a clear message; use Virtuoso via Gemini instead.
 
+## Known limits
+
+- Cloud backends require your own API key.
+- Shimmy/local inference depends heavily on your GPU/RAM and model size.
+- `/run` is lightweight process isolation, not a hardened sandbox for untrusted code.
+- SWE-bench scripts are optional and resource-heavy; they are not needed for normal use.
+- Gemini/OpenAI responses can be wrong; review generated code before running it.
+
 ## Development
 
 ```bash
-python -m pytest tests/ -q --ignore=tests/test_tui.py --ignore=tests/test_gemini_integration.py
+pip install -e ".[dev]"
+python -m pytest tests/ -q --ignore=tests/test_gemini_integration.py
 ```
+
+More project docs:
+
+- [Architecture](docs/architecture.md)
+- [Roadmap](docs/roadmap.md)
+- [Demo recording script](docs/demo_script.md)
+- [Good first issue ideas](docs/good_first_issues.md)
 
 ## Privacy
 

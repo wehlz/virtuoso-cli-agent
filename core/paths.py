@@ -15,7 +15,10 @@ def app_dir() -> Path:
     """Writable directory beside the executable (frozen) or project root (dev)."""
     if is_frozen():
         return Path(sys.executable).resolve().parent
-    return Path(__file__).resolve().parent.parent
+    project_root = Path(__file__).resolve().parent.parent
+    if (project_root / "virtuoso.py").exists() and (project_root / "virtuoso.yaml.example").exists():
+        return project_root
+    return Path.cwd()
 
 
 def resource_dir() -> Path:

@@ -1,0 +1,39 @@
+name: Feature request
+description: Suggest an improvement or new capability.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What are you trying to do that Virtuoso does not support well yet?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior or interface you would like.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Browser dashboard
+        - Terminal CLI
+        - TUI
+        - VS Code / Cursor integration
+        - Gemini backend
+        - OpenAI-compatible backend
+        - Shimmy / local models
+        - Packaging / standalone exe
+        - Documentation
+        - Other
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context
+      description: Links, examples, screenshots, or prior art.

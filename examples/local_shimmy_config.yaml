@@ -1,0 +1,10 @@
+llm:
+  backend: shimmy
+  shimmy:
+    enabled: true
+    port: 8080
+    binary_path: ""
+    model: auto
+    model_path: virtuoso_data/models/Qwen2.5-Coder-0.5B-Instruct-Q4_K_M.gguf
+    auto_start: false
+    auto_download_model: false

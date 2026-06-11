@@ -14,6 +14,16 @@ def get_data_arg(source: str, target: str) -> str:
     return f"{source_path}:{target}"
 
 
+def is_valid_ico(path: Path) -> bool:
+    """Return True when path has the basic Windows ICO header."""
+    try:
+        with path.open("rb") as fh:
+            header = fh.read(6)
+    except OSError:
+        return False
+    return len(header) == 6 and header[:4] == b"\x00\x00\x01\x00" and int.from_bytes(header[4:6], "little") > 0
+
+
 def resolve_bundle_config(root: Path, config_path: Optional[Path] = None) -> Path:
     """Pick config to embed in the executable (default: template without secrets)."""
     if config_path is not None:
@@ -55,13 +65,15 @@ def build(
     else:
         icon_dirs = [Path("assets/icons"), Path("asset/icons")]
         if sys.platform == "win32":
-            icon_candidates = ["virtuoso.ico", "virtuoso.png"]
+            icon_candidates = ["virtuoso.ico"]
             for icon_dir in icon_dirs:
                 for icon_name in icon_candidates:
                     candidate = icon_dir / icon_name
-                    if candidate.exists():
+                    if candidate.exists() and is_valid_ico(candidate):
                         icon_file = str(candidate.resolve())
                         break
+                    if candidate.exists():
+                        print(f"Warning: Icon file is not a valid .ico and will be skipped: {candidate}")
                 if icon_file:
                     break
         elif sys.platform == "darwin":

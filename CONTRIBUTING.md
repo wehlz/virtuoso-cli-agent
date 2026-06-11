@@ -16,7 +16,7 @@ source .venv/bin/activate  # macOS/Linux
 
 ```bash
 pip install -r requirements.txt
-pip install pytest pyinstaller
+pip install -e ".[dev]"
 ```
 
 ## Building the standalone executable

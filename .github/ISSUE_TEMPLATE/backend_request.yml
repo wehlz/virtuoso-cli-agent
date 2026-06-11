@@ -1,0 +1,29 @@
+name: Backend or model request
+description: Request support for a model provider, local runtime, or API-compatible backend.
+title: "[Backend]: "
+labels: ["enhancement"]
+body:
+  - type: input
+    id: provider
+    attributes:
+      label: Provider or runtime
+      placeholder: "Example: Anthropic, Ollama, LM Studio, OpenRouter model name"
+    validations:
+      required: true
+  - type: input
+    id: api
+    attributes:
+      label: API style
+      placeholder: "OpenAI-compatible, custom REST, local server, SDK, etc."
+  - type: textarea
+    id: reason
+    attributes:
+      label: Why should Virtuoso support it?
+      description: Include pricing, speed, local/offline benefits, or model quality notes.
+    validations:
+      required: true
+  - type: textarea
+    id: docs
+    attributes:
+      label: Documentation links
+      description: Link to API docs, SDK docs, model cards, or setup guides.
