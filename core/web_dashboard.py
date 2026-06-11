@@ -155,7 +155,10 @@ def request_cancel() -> None:
 
 def _run_action(mode: str, prompt: str) -> Dict[str, Any]:
     if cli.llm_client is None:
-        cli._reconnect_llm()
+        try:
+            cli._reconnect_llm()
+        except Exception:
+            pass
     if cli.llm_client is None:
         return {
             "error": (
@@ -335,7 +338,11 @@ def _bootstrap_backend() -> None:
     elif cli.llm_client is None:
         cli.init()
     if cli.llm_client is None:
-        cli._reconnect_llm()
+        try:
+            cli._reconnect_llm()
+        except Exception:
+            # No API key yet — dashboard still starts; user configures via Setup in browser.
+            pass
 
 
 def run_dashboard(host: str = "127.0.0.1", port: int = 8788, open_browser: bool = True) -> None:
