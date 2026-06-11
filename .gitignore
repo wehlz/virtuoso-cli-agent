@@ -1,0 +1,46 @@
+# Local config (copy virtuoso.yaml.example → virtuoso.yaml)
+virtuoso.yaml
+
+# PyInstaller / build outputs
+dist/
+build/
+
+# Runtime state and logs
+.virtuoso/
+virtuoso_data/
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+venv/
+.venv/
+env/
+
+# Environment and secrets
+.env
+.env.*
+*.pem
+*credentials*.json
+
+# SWE-bench evaluation artifacts
+swe_bench_results/
+*.swebench_cache/
+
+# Dataset caches and large downloaded files
+datasets/
+.huggingface/
+.cache/huggingface/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

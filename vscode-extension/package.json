@@ -1,0 +1,29 @@
+{
+  "name": "virtuoso-agent",
+  "displayName": "Virtuoso Agent",
+  "description": "Launch Virtuoso CLI and IDE server from VS Code or Cursor",
+  "version": "0.1.0",
+  "publisher": "virtuoso",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "virtuoso.openTerminal",
+        "title": "Virtuoso: Open CLI"
+      },
+      {
+        "command": "virtuoso.startServe",
+        "title": "Virtuoso: Start IDE Server"
+      },
+      {
+        "command": "virtuoso.sendSelection",
+        "title": "Virtuoso: Ask About Selection"
+      }
+    ]
+  }
+}
